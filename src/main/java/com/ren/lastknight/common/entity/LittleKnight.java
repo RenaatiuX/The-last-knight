@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.DamageSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
@@ -32,6 +33,8 @@ public class LittleKnight extends MonsterEntity implements IAnimatable, IAnimati
     private static final DataParameter<Boolean> SPAWN = EntityDataManager.createKey(LittleKnight.class, DataSerializers.BOOLEAN);
     private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
 
+
+    private int knightID;
     public LittleKnight(EntityType<? extends LittleKnight> type, World worldIn) {
         super(type, worldIn);
     }
@@ -62,12 +65,49 @@ public class LittleKnight extends MonsterEntity implements IAnimatable, IAnimati
         this.dataManager.register(SPAWN, false);
     }
 
+    @Override
+    public void readAdditional(CompoundNBT nbt) {
+        super.readAdditional(nbt);
+        this.knightID = nbt.getInt("KnightID");
+    }
+
+    @Override
+    public void writeAdditional(CompoundNBT nbt) {
+        super.writeAdditional(nbt);
+        nbt.putInt("KnightID", this.knightID);
+    }
+
+    public void setKnight(Knight knight){
+        this.knightID = knight.getEntityId();
+    }
+
+    @Override
+    public void tick() {
+        if (!world.isRemote){
+            Entity e = this.world.getEntityByID(knightID);
+            if (!e.isAlive()){
+                this.setHealth(0);
+            }
+        }
+        super.tick();
+    }
+
     public boolean getSpawn() {
         return this.dataManager.get(SPAWN);
     }
 
     public void setSpawn(boolean spawn) {
         this.dataManager.set(SPAWN, spawn);
+    }
+
+    @Override
+    public void onDeath(DamageSource p_70645_1_) {
+        super.onDeath(p_70645_1_);
+        Entity e = world.getEntityByID(this.knightID);
+        if (e instanceof  Knight){
+            Knight knight = (Knight) e;
+            knight.reduceAmountMinions();
+        }
     }
 
     @Override
