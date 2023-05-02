@@ -1,23 +1,31 @@
 package com.ren.lastknight.common.entity;
 
 import com.ren.lastknight.core.init.EntityInit;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.monster.SkeletonEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.AxeItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
@@ -41,20 +49,19 @@ import software.bernie.geckolib3.util.GeckoLibUtil;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.UUID;
 
 public class Knight extends MonsterEntity implements IAnimatable, IAnimationTickable {
-
-
-    private static final AttributeModifier SPEED_NULLIFIER = new AttributeModifier("freeze", 0, AttributeModifier.Operation.MULTIPLY_TOTAL);
 
     public static final DataParameter<Integer> CHARGING = EntityDataManager.createKey(Knight.class, DataSerializers.VARINT);
     public static final DataParameter<Boolean> SUMMONING = EntityDataManager.createKey(Knight.class, DataSerializers.BOOLEAN);
 
-    public static final int MAX_CHARGING = 500;
+    public static final int MAX_CHARGING = 50;
 
     private final ServerBossInfo bossInfo = (ServerBossInfo) (new ServerBossInfo(this.getDisplayName(), BossInfo.Color.RED, BossInfo.Overlay.PROGRESS)).setDarkenSky(false);
     private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
     private int amountMinions = 0;
+
     public Knight(EntityType<? extends Knight> type, World worldIn) {
         super(type, worldIn);
     }
@@ -114,10 +121,10 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
 
     @Override
     public void livingTick() {
-        if (this.dataManager.get(SUMMONING) && !getAttribute(Attributes.MOVEMENT_SPEED).hasModifier(SPEED_NULLIFIER)){
-            this.getAttribute(Attributes.MOVEMENT_SPEED).applyPersistentModifier(SPEED_NULLIFIER);
-        }else {
-            this.getAttribute(Attributes.MOVEMENT_SPEED).removeModifier(SPEED_NULLIFIER);
+        if (!world.isRemote()) {
+            if (this.dataManager.get(SUMMONING)) {
+                this.addPotionEffect(new EffectInstance(Effects.SLOWNESS, 1, 99, false, false));
+            }
         }
         super.livingTick();
     }
@@ -148,21 +155,25 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
         LittleKnight littleKnight1 = EntityInit.LITTLE_KNIGHT.get().create(world);
         littleKnight1.setPosition(northX, posY, northZ);
         littleKnight1.setKnight(this);
+        littleKnight1.setAttackTarget(this.getAttackTarget());
         world.addEntity(littleKnight1);
 
         LittleKnight littleKnight2 = EntityInit.LITTLE_KNIGHT.get().create(world);
         littleKnight2.setPosition(southX, posY, southZ);
         littleKnight2.setKnight(this);
+        littleKnight2.setAttackTarget(this.getAttackTarget());
         world.addEntity(littleKnight2);
 
         LittleKnight littleKnight3 = EntityInit.LITTLE_KNIGHT.get().create(world);
         littleKnight3.setPosition(eastX, posY, eastZ);
         littleKnight3.setKnight(this);
+        littleKnight3.setAttackTarget(this.getAttackTarget());
         world.addEntity(littleKnight3);
 
         LittleKnight littleKnight4 = EntityInit.LITTLE_KNIGHT.get().create(world);
         littleKnight4.setPosition(westX, posY, westZ);
         littleKnight4.setKnight(this);
+        littleKnight4.setAttackTarget(this.getAttackTarget());
         world.addEntity(littleKnight4);
     }
 
@@ -170,7 +181,7 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
     protected void updateAITasks() {
         super.updateAITasks();
         if (this.ticksExisted % 20 == 0) {
-            this.heal(1.0F);
+            this.heal(0.05F);
         }
         this.bossInfo.setPercent(this.getHealth() / this.getMaxHealth());
     }
@@ -195,11 +206,11 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
     }
 
     private PlayState predicate(AnimationEvent<Knight> event) {
-        if (event.isMoving()) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("Walk.Knight.new", ILoopType.EDefaultLoopTypes.LOOP));
+        if (this.dataManager.get(SUMMONING)) {
+            event.getController().setAnimation(new AnimationBuilder().addAnimation("summoning.Knight.new", ILoopType.EDefaultLoopTypes.HOLD_ON_LAST_FRAME));
             return PlayState.CONTINUE;
-        } else if (this.dataManager.get(SUMMONING)) {
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("summoning.Knight.new", ILoopType.EDefaultLoopTypes.PLAY_ONCE));
+        } else if (event.isMoving()) {
+            event.getController().setAnimation(new AnimationBuilder().addAnimation("Walk.Knight.new", ILoopType.EDefaultLoopTypes.LOOP));
             return PlayState.CONTINUE;
         }
         event.getController().setAnimation(new AnimationBuilder().addAnimation("Idle.Knight.new", ILoopType.EDefaultLoopTypes.LOOP));
@@ -215,15 +226,56 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
         return PlayState.CONTINUE;
     }
 
-    protected int getCharging(){
+    @Override
+    protected void damageEntity(DamageSource damageSrc, float damageAmount) {
+        super.damageEntity(damageSrc, damageAmount);
+        addCharging((int) damageAmount);
+    }
+
+    @Override
+    public boolean attackEntityAsMob(Entity entityIn) {
+        float f = (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        float f1 = (float) this.getAttributeValue(Attributes.ATTACK_KNOCKBACK);
+        if (entityIn instanceof LivingEntity) {
+            f += EnchantmentHelper.getModifierForCreature(this.getHeldItemMainhand(), ((LivingEntity) entityIn).getCreatureAttribute());
+            f1 += (float) EnchantmentHelper.getKnockbackModifier(this);
+        }
+
+        int i = EnchantmentHelper.getFireAspectModifier(this);
+        if (i > 0) {
+            entityIn.setFire(i * 4);
+        }
+
+        boolean flag = entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), f);
+        if (flag) {
+            addCharging((int) f);
+            heal(f * .6f);
+            if (f1 > 0.0F && entityIn instanceof LivingEntity) {
+                ((LivingEntity) entityIn).applyKnockback(f1 * 0.5F, (double) MathHelper.sin(this.rotationYaw * ((float) Math.PI / 180F)), (double) (-MathHelper.cos(this.rotationYaw * ((float) Math.PI / 180F))));
+                this.setMotion(this.getMotion().mul(0.6D, 1.0D, 0.6D));
+            }
+
+            if (entityIn instanceof PlayerEntity) {
+                PlayerEntity playerentity = (PlayerEntity) entityIn;
+                this.func_233655_a_(playerentity, this.getHeldItemMainhand(), playerentity.isHandActive() ? playerentity.getActiveItemStack() : ItemStack.EMPTY);
+            }
+
+            this.applyEnchantments(this, entityIn);
+            this.setLastAttackedEntity(entityIn);
+        }
+
+        return flag;
+    }
+
+    protected int getCharging() {
         return this.dataManager.get(CHARGING);
     }
 
-    void resetCharging(){
+    void resetCharging() {
         this.dataManager.set(CHARGING, 0);
     }
 
-    protected void addCharging(int toAdd){
+    protected void addCharging(int toAdd) {
         this.dataManager.set(CHARGING, MathHelper.clamp(getCharging() + toAdd, 0, MAX_CHARGING));
     }
 
@@ -231,7 +283,7 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
         this.amountMinions = Math.min(0, amountMinions);
     }
 
-    void reduceAmountMinions(){
+    void reduceAmountMinions() {
         this.amountMinions = Math.min(0, amountMinions - 1);
     }
 
@@ -239,11 +291,11 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
         return amountMinions;
     }
 
-    void setSummoning(boolean summoning){
+    void setSummoning(boolean summoning) {
         this.dataManager.set(SUMMONING, summoning);
     }
 
-    public boolean canSummon(){
+    public boolean canSummon() {
         return getCharging() >= MAX_CHARGING && amountMinions <= 0;
     }
 
@@ -255,6 +307,17 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
     @Override
     public int tickTimer() {
         return this.ticksExisted;
+    }
+
+    private void func_233655_a_(PlayerEntity p_233655_1_, ItemStack p_233655_2_, ItemStack p_233655_3_) {
+        if (!p_233655_2_.isEmpty() && !p_233655_3_.isEmpty() && p_233655_2_.getItem() instanceof AxeItem && p_233655_3_.getItem() == Items.SHIELD) {
+            float f = 0.25F + (float) EnchantmentHelper.getEfficiencyModifier(this) * 0.05F;
+            if (this.rand.nextFloat() < f) {
+                p_233655_1_.getCooldownTracker().setCooldown(Items.SHIELD, 100);
+                this.world.setEntityState(p_233655_1_, (byte) 30);
+            }
+        }
+
     }
 
 }

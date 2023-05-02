@@ -29,7 +29,7 @@ public class SummonMinionsGoal extends Goal {
 
     @Override
     public void tick() {
-        if (tickCounter == 20){
+        if (tickCounter == 50){
             entity.spawnSkeletons();
         }
         tickCounter++;

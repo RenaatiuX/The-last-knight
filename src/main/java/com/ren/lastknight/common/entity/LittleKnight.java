@@ -85,7 +85,7 @@ public class LittleKnight extends MonsterEntity implements IAnimatable, IAnimati
     public void tick() {
         if (!world.isRemote){
             Entity e = this.world.getEntityByID(knightID);
-            if (!e.isAlive()){
+            if (e == null || !e.isAlive()){
                 this.setHealth(0);
             }
         }
