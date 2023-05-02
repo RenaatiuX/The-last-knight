@@ -1,0 +1,133 @@
+{
+  "format_version": "1.12.0",
+  "minecraft:geometry": [
+    {
+      "description": {
+        "identifier": "geometry.Knight",
+        "texture_width": 128,
+        "texture_height": 128,
+        "visible_bounds_width": 11,
+        "visible_bounds_height": 7,
+        "visible_bounds_offset": [0, 2.5, 0]
+      },
+      "bones": [
+        {
+          "name": "All",
+          "pivot": [0, 31, 0]
+        },
+        {
+          "name": "Puente",
+          "parent": "All",
+          "pivot": [0, 0, 0]
+        },
+        {
+          "name": "body",
+          "parent": "Puente",
+          "pivot": [0, 24, 0]
+        },
+        {
+          "name": "bodyAttack",
+          "parent": "body",
+          "pivot": [0, 24, 0],
+          "cubes": [
+            {"origin": [-4.5, 14, -4], "size": [9, 9, 8], "inflate": 0.5, "uv": [62, 44]},
+            {"origin": [-9, 21, -6], "size": [18, 12, 12], "pivot": [0, 27, 0], "rotation": [45, 0, 0], "uv": [30, 20]},
+            {"origin": [-3.5, 7, -3], "size": [7, 6, 6], "inflate": 0.5, "uv": [76, 64]}
+          ]
+        },
+        {
+          "name": "head",
+          "parent": "bodyAttack",
+          "pivot": [0, 34, 0]
+        },
+        {
+          "name": "headAttack",
+          "parent": "head",
+          "pivot": [0, 34, 0],
+          "cubes": [
+            {"origin": [-4, 34, -4], "size": [8, 8, 8], "inflate": -0.2, "uv": [52, 70]}
+          ]
+        },
+        {
+          "name": "Layerhat",
+          "parent": "headAttack",
+          "pivot": [8, 34, -8],
+          "cubes": [
+            {"origin": [-1, 46, -4], "size": [2, 8, 18], "uv": [40, 44]},
+            {"origin": [-1, 39, 7], "size": [2, 7, 7], "uv": [77, 79]},
+            {"origin": [-2, 45, -3], "size": [4, 1, 10], "uv": [0, 34]},
+            {"origin": [-2, 40, 6], "size": [4, 5, 1], "uv": [16, 20]},
+            {"origin": [-1, 42, 1], "size": [2, 4, 2], "uv": [16, 26]},
+            {"origin": [-4, 34, -4], "size": [8, 8, 8], "inflate": 0.6, "uv": [20, 70]}
+          ]
+        },
+        {
+          "name": "Newhat",
+          "parent": "Layerhat",
+          "pivot": [0, 38, 0],
+          "cubes": [
+            {"origin": [-5.5, 35, -7], "size": [11, 5, 9], "pivot": [0, 38, 1], "rotation": [-30, 0, 0], "uv": [0, 55]}
+          ]
+        },
+        {
+          "name": "Sub_arm_sw",
+          "parent": "bodyAttack",
+          "pivot": [-9, 31, 0]
+        },
+        {
+          "name": "arm0",
+          "parent": "Sub_arm_sw",
+          "pivot": [-9, 31, 0]
+        },
+        {
+          "name": "arm0attack",
+          "parent": "arm0",
+          "pivot": [-9, 31, 0],
+          "cubes": [
+            {"origin": [-13, 7.5, -3], "size": [4, 26, 6], "uv": [0, 69]}
+          ]
+        },
+        {
+          "name": "sword",
+          "parent": "arm0attack",
+          "pivot": [-11, 11, -3],
+          "cubes": [
+            {"origin": [-12, 10, -6], "size": [2, 2, 12], "uv": [0, 20]},
+            {"origin": [-12, 6, -8], "size": [2, 10, 2], "uv": [0, 20]},
+            {"origin": [-11.5, 7.5, -36], "size": [1, 7, 28], "uv": [0, 20]}
+          ]
+        },
+        {
+          "name": "arm1",
+          "parent": "bodyAttack",
+          "pivot": [9, 31, 0]
+        },
+        {
+          "name": "arm1attack",
+          "parent": "arm1",
+          "pivot": [9, 31, 0],
+          "cubes": [
+            {"origin": [9, 7.5, -3], "size": [4, 26, 6], "uv": [0, 69]}
+          ]
+        },
+        {
+          "name": "leg_left",
+          "parent": "Puente",
+          "pivot": [3, 12, 0],
+          "mirror": true,
+          "cubes": [
+            {"origin": [1.5, 0, -2.5], "size": [6, 12, 5], "uv": [78, 15], "mirror": false}
+          ]
+        },
+        {
+          "name": "leg_rihgt",
+          "parent": "Puente",
+          "pivot": [-3, 12, 0],
+          "cubes": [
+            {"origin": [-7.5, 0, -2.5], "size": [6, 12, 5], "uv": [78, 15]}
+          ]
+        }
+      ]
+    }
+  ]
+}

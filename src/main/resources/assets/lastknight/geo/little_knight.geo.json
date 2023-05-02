@@ -1,0 +1,91 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.mini_knight",
+				"texture_width": 128,
+				"texture_height": 128,
+				"visible_bounds_width": 3,
+				"visible_bounds_height": 3.5,
+				"visible_bounds_offset": [0, 1.25, 0]
+			},
+			"bones": [
+				{
+					"name": "All",
+					"pivot": [0, 0, 0]
+				},
+				{
+					"name": "legLeft",
+					"parent": "All",
+					"pivot": [2.5, 7, 0],
+					"cubes": [
+						{"origin": [1, 0, -1.5], "size": [3, 7, 3], "uv": [37, 14]}
+					]
+				},
+				{
+					"name": "legRight",
+					"parent": "All",
+					"pivot": [-2.5, 7, 0],
+					"cubes": [
+						{"origin": [-4, 0, -1.5], "size": [3, 7, 3], "uv": [37, 14]}
+					]
+				},
+				{
+					"name": "body",
+					"parent": "All",
+					"pivot": [0, 11.5, 0]
+				},
+				{
+					"name": "bodyattack",
+					"parent": "body",
+					"pivot": [0, 11.5, 0],
+					"cubes": [
+						{"origin": [-4, 7, -2.5], "size": [8, 9, 5], "uv": [26, 37]}
+					]
+				},
+				{
+					"name": "armLeft",
+					"parent": "bodyattack",
+					"pivot": [4, 14.5, 0]
+				},
+				{
+					"name": "armLeftAttack",
+					"parent": "armLeft",
+					"pivot": [4, 14.5, 0],
+					"cubes": [
+						{"origin": [4, 6, -1.5], "size": [3, 10, 3], "uv": [49, 11]}
+					]
+				},
+				{
+					"name": "armRight",
+					"parent": "bodyattack",
+					"pivot": [-4, 14.5, 0]
+				},
+				{
+					"name": "armRightAttack",
+					"parent": "armRight",
+					"pivot": [-4, 14.5, 0],
+					"cubes": [
+						{"origin": [-7, 6, -1.5], "size": [3, 10, 3], "uv": [49, 11], "mirror": true}
+					]
+				},
+				{
+					"name": "head",
+					"parent": "bodyattack",
+					"pivot": [0, 16, 0]
+				},
+				{
+					"name": "headAttack",
+					"parent": "head",
+					"pivot": [0, 16, 0],
+					"cubes": [
+						{"origin": [-1, 17, -3], "size": [2, 11, 11], "uv": [0, 32]},
+						{"origin": [-6.5, 20, 3], "size": [13, 5, 8], "pivot": [0, 38, 1], "rotation": [-30, 0, 0], "uv": [24, 24]},
+						{"origin": [-6, 16, -4], "size": [12, 8, 8], "uv": [0, 0]}
+					]
+				}
+			]
+		}
+	]
+}

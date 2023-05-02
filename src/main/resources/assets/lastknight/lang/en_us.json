@@ -1,0 +1,10 @@
+{
+  "itemGroup.lastknight.items" : "The Last Knight",
+  "item.lastknight.knight_helmet" : "Knight Helmet",
+  "item.lastknight.knight_sword" : "Knight Sword",
+  "item.lastknight.knight_spawn_egg" : "Knight Spawn Egg",
+  "item.lastknight.little_knight_spawn_egg" : "Little Knight Spawn Egg",
+
+  "entity.lastknight.knight" : "The Last Knight",
+  "entity.lastknight.little_knight" : "Little Knight"
+}
