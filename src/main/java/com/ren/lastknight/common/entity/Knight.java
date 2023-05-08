@@ -304,7 +304,7 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
     }
 
     void reduceAmountMinions() {
-        this.amountMinions = Math.min(0, amountMinions - 1);
+        this.amountMinions = Math.max(0, amountMinions - 1);
     }
 
     int getAmountMinions() {
