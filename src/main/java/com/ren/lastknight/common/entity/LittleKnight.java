@@ -34,19 +34,51 @@ public class LittleKnight extends MonsterEntity implements IAnimatable, IAnimati
     private final AnimationFactory factory = GeckoLibUtil.createFactory(this);
 
 
-    private int knightID;
+    private int knightID, spawningTick;
+
     public LittleKnight(EntityType<? extends LittleKnight> type, World worldIn) {
         super(type, worldIn);
+        setSpawningTick(36);
     }
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(0, new SwimGoal(this));
-        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0D, true));
-        this.goalSelector.addGoal(2, new WaterAvoidingRandomWalkingGoal(this, 0.8D));
-        this.goalSelector.addGoal(3, new LookAtGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.addGoal(4, new LookRandomlyGoal(this));
-        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, true));
+        this.goalSelector.addGoal(0, new SwimGoal(this) {
+            @Override
+            public boolean shouldExecute() {
+                return !getSpawn() && super.shouldExecute();
+            }
+        });
+        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0D, true) {
+            @Override
+            public boolean shouldExecute() {
+                return !getSpawn() && super.shouldExecute();
+            }
+        });
+        this.goalSelector.addGoal(2, new WaterAvoidingRandomWalkingGoal(this, 0.8D) {
+            @Override
+            public boolean shouldExecute() {
+                return !getSpawn() && super.shouldExecute();
+            }
+        });
+        this.goalSelector.addGoal(3, new LookAtGoal(this, PlayerEntity.class, 8.0F) {
+            @Override
+            public boolean shouldExecute() {
+                return !getSpawn() && super.shouldExecute();
+            }
+        });
+        this.goalSelector.addGoal(4, new LookRandomlyGoal(this) {
+            @Override
+            public boolean shouldExecute() {
+                return !getSpawn() && super.shouldExecute();
+            }
+        });
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<PlayerEntity>(this, PlayerEntity.class, true) {
+            @Override
+            public boolean shouldExecute() {
+                return !getSpawn() && super.shouldExecute();
+            }
+        });
     }
 
     public static AttributeModifierMap.MutableAttribute createAttributes() {
@@ -62,32 +94,39 @@ public class LittleKnight extends MonsterEntity implements IAnimatable, IAnimati
     @Override
     protected void registerData() {
         super.registerData();
-        this.dataManager.register(SPAWN, false);
+        this.dataManager.register(SPAWN, true);
     }
 
     @Override
     public void readAdditional(CompoundNBT nbt) {
         super.readAdditional(nbt);
         this.knightID = nbt.getInt("KnightID");
+        this.setSpawn(nbt.getBoolean("spawning"));
     }
 
     @Override
     public void writeAdditional(CompoundNBT nbt) {
         super.writeAdditional(nbt);
         nbt.putInt("KnightID", this.knightID);
+        nbt.putBoolean("spawning", this.getSpawn());
     }
 
-    public void setKnight(Knight knight){
+    public void setKnight(Knight knight) {
         this.knightID = knight.getEntityId();
     }
 
     @Override
     public void tick() {
-        if (!world.isRemote){
+        if (!world.isRemote) {
             Entity e = this.world.getEntityByID(knightID);
-            if (e == null || !e.isAlive()){
+            if (e == null || !e.isAlive()) {
                 this.setHealth(0);
             }
+        }
+        if (spawningTick > 0) {
+            spawningTick--;
+            if (spawningTick == 0)
+                setSpawn(false);
         }
         super.tick();
     }
@@ -104,7 +143,7 @@ public class LittleKnight extends MonsterEntity implements IAnimatable, IAnimati
     public void onDeath(DamageSource p_70645_1_) {
         super.onDeath(p_70645_1_);
         Entity e = world.getEntityByID(this.knightID);
-        if (e instanceof  Knight){
+        if (e instanceof Knight) {
             Knight knight = (Knight) e;
             knight.reduceAmountMinions();
         }
@@ -117,15 +156,22 @@ public class LittleKnight extends MonsterEntity implements IAnimatable, IAnimati
         data.addAnimationController(new AnimationController<>(this, "attackController", 0, this::attackPredicate));
     }
 
+    @Override
+    public void livingTick() {
+        super.livingTick();
+    }
+
     private PlayState predicate(AnimationEvent<LittleKnight> event) {
+        if (this.getSpawn()) {
+            event.getController().setAnimation(new AnimationBuilder().addAnimation("miniknight.Emerge", ILoopType.EDefaultLoopTypes.PLAY_ONCE));
+            if (event.getController().getAnimationState() == AnimationState.Stopped)
+                setSpawn(false);
+            return PlayState.CONTINUE;
+        }
         if (event.isMoving()) {
             event.getController().setAnimation(new AnimationBuilder().addAnimation("miniknight.walk", ILoopType.EDefaultLoopTypes.LOOP));
             return PlayState.CONTINUE;
         }
-        /*if (this.getSpawn()){
-            event.getController().setAnimation(new AnimationBuilder().addAnimation("miniknight.Emerge", ILoopType.EDefaultLoopTypes.PLAY_ONCE));
-            return PlayState.CONTINUE;
-        }*/
         event.getController().setAnimation(new AnimationBuilder().addAnimation("miniknight.idle", ILoopType.EDefaultLoopTypes.LOOP));
         return PlayState.CONTINUE;
     }
@@ -147,5 +193,13 @@ public class LittleKnight extends MonsterEntity implements IAnimatable, IAnimati
     @Override
     public int tickTimer() {
         return this.ticksExisted;
+    }
+
+    public void setSpawningTick(int spawningTick) {
+        this.spawningTick = spawningTick;
+    }
+
+    public int getSpawningTick() {
+        return spawningTick;
     }
 }

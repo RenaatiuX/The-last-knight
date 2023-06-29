@@ -227,7 +227,6 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
     private PlayState attackPredicate(AnimationEvent<Knight> event) {
         if (this.isSwingInProgress && event.getController().getAnimationState().equals(AnimationState.Stopped)) {
             event.getController().markNeedsReload();
-            System.out.println(hasBigAttack());
             if (hasBigAttack())
                 event.getController().setAnimation(new AnimationBuilder().addAnimation("Attack1.knight.new", ILoopType.EDefaultLoopTypes.PLAY_ONCE));
             else
