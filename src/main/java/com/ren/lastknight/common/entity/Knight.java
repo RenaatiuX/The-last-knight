@@ -10,6 +10,7 @@ import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.monster.MonsterEntity;
 import net.minecraft.entity.monster.SkeletonEntity;
+import net.minecraft.entity.passive.fish.AbstractFishEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.AxeItem;
@@ -26,12 +27,11 @@ import net.minecraft.potion.Effects;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityPredicates;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.BossInfo;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerBossInfo;
 import org.apache.http.conn.scheme.SchemeLayeredSocketFactory;
@@ -48,9 +48,7 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.util.GeckoLibUtil;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.UUID;
+import java.util.*;
 
 public class Knight extends MonsterEntity implements IAnimatable, IAnimationTickable {
 
@@ -87,6 +85,13 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
                 .createMutableAttribute(Attributes.ATTACK_DAMAGE, 10.0F)
                 .createMutableAttribute(Attributes.ARMOR, 20.0D)
                 .createMutableAttribute(Attributes.KNOCKBACK_RESISTANCE, 10.0D);
+    }
+
+    public static boolean canSpawn(EntityType<? extends Knight> type, IWorld worldIn, SpawnReason reason, BlockPos pos, Random randomIn){
+        List<Knight> knights = worldIn.getEntitiesWithinAABB(Knight.class, new AxisAlignedBB(pos).grow(50));
+        if (!worldIn.getBlockState(pos.down()).isSolid())
+            return false;
+        return knights.isEmpty();
     }
 
     @Override
@@ -234,6 +239,11 @@ public class Knight extends MonsterEntity implements IAnimatable, IAnimationTick
             this.isSwingInProgress = false;
         }
         return PlayState.CONTINUE;
+    }
+
+    @Override
+    public boolean isImmuneToFire() {
+        return true;
     }
 
     @Override

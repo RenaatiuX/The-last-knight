@@ -131,6 +131,11 @@ public class LittleKnight extends MonsterEntity implements IAnimatable, IAnimati
         super.tick();
     }
 
+    @Override
+    public boolean isImmuneToFire() {
+        return true;
+    }
+
     public boolean getSpawn() {
         return this.dataManager.get(SPAWN);
     }

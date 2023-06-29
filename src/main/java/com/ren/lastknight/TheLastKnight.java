@@ -22,8 +22,6 @@ public class TheLastKnight
 
     public TheLastKnight() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
-        bus.addListener(this::setup);
-        bus.addListener(this::doClientStuff);
 
         GeckoLib.initialize();
 
@@ -31,14 +29,5 @@ public class TheLastKnight
         EntityInit.ENTITY_TYPES.register(bus);
 
         MinecraftForge.EVENT_BUS.register(this);
-    }
-
-    private void setup(final FMLCommonSetupEvent event)
-    {
-
-    }
-
-    private void doClientStuff(final FMLClientSetupEvent event) {
-
     }
 }
